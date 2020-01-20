@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>D3 워드클라우드</title>
+
+    <script src="https://d3js.org/d3.v4.min.js"></script>
+    <script src="./js/d3-layout-cloud.js"></script>
+    <style>
+        body { background-color: lightgray; }
+        svg { width: 100%; height: 100%; position: center; }
+    </style>
+
+</head>
+<body>
+    <svg width="960" height="500"></svg>
+    <script>
+        var margin = { top: 30, right: 50, bottom: 30, left: 50 };
+        var width = 960 - margin.left - margin.right;
+        var height = 500 - margin.top - margin.bottom;
+
+        var g = d3.select("svg")
+                .append("g")
+                .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+        d3.csv("./data/team_info.csv", function(data) {
+            var wordScale = d3.scaleLinear()
+                .domain([0, 75])
+                .range([10, 120])
+
+        var layout = d3.layout.cloud()
+                .size([width, height])
+                .timeInterval(20)
+                .words(data)
+                .rotate(function(d) { return 0; })
+                .fontSize(d => wordScale(d.frequency))
+                .fontWeight(["bold"])
+                .text(function(d) { return d.text; })
+                .spiral("rectangular")
+                .on("end", draw)
+                .start();
+
+
+            var wordcloud = g.append("g")
+                .attr("class", "wordcloud")
+                .attr("transform", "translate(" + width/2 + "," + height/2 + ")");
+
+            g.append("g")
+                .attr("class", "axis")
+                .attr("transform", "translate(0," + height + ")")
+                .selectAll('text')
+                .style('fill', function(d) { return color(d); })
+                .style('font', 'sans-serif');
+
+        function draw(words) {
+            wordcloud.selectAll("text")
+                .data(words)
+                .enter().append("text")
+                .attr('class', 'word')
+                // .style('fill', function(d, i) { return color(i); })
+                .style("font-size", function(d) { return d.size + "px"; })
+                .style("font-family", function(d) { return d.font; })
+
+                .attr("text-anchor", "middle")
+                .attr("transform", function(d) { return "translate(" + [d.x, d.y] + ")rotate(" + d.rotate + ")"; })
+                .text(function(d) { return d.text; });
+        };
+
+
+                
+        });
+
+    </script>
+</body>
+</html>
